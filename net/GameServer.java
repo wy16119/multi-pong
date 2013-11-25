@@ -105,7 +105,7 @@ public class GameServer extends Thread{
     } catch (IOException e) {
       e.printStackTrace();
     }
-    System.out.println("Server > " + new String(packet.getData()));
+    System.out.println("Server sending: " + new String(packet.getData()));
   }
 
   public void sendDataToAllClients(byte[] data) {

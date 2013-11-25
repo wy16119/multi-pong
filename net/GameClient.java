@@ -40,7 +40,7 @@ public class GameClient extends Thread{
         e.printStackTrace();
       }
       this.parsePacket(packet.getData(), packet.getAddress(), packet.getPort());
-      System.out.println("Client > " + new String(packet.getData()));
+      System.out.println("Client received: " + new String(packet.getData()));
     }
   }
 

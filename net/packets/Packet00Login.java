@@ -17,10 +17,13 @@ public class Packet00Login extends Packet{
     this.username = username;
   }
   
+//  send datatype+username to client socket
+//  then client write data to its socket
   public void writeData(GameClient client) {
     client.sendData(getData());
   }
-
+//  send datatype+username to server socket
+//  then server write data to all clients
   public void writeData(GameServer server) {
     server.sendDataToAllClients(getData());
   }
