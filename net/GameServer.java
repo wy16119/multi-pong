@@ -95,7 +95,6 @@ public class GameServer extends Thread{
     }
     if(!alreadyConnected) {
       this.connectedPlayers.add(player);
-      packet.writeData(this);
     }
   }
 

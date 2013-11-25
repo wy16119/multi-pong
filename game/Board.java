@@ -9,11 +9,15 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+
+import net.GameClient;
+import net.GameServer;
+import net.packets.Packet00Login;
 
 
 public class Board extends JPanel implements Commons {
@@ -28,9 +32,22 @@ public class Board extends JPanel implements Commons {
     boolean ingame = true;
     int timerId;
 
-
+    private GameServer socketServer;
+    private GameClient socketClient;
+    
     public Board() {
-
+      if(JOptionPane.showConfirmDialog(this, "Do you want to run the server") == 0) {
+        socketServer = new GameServer();
+        socketServer.start();
+      }
+      
+      
+      
+      socketClient = new GameClient("localhost");
+      socketClient.start();
+      Packet00Login loginPacket = new Packet00Login(JOptionPane.showInputDialog(this, "Please enter username"));
+      loginPacket.writeData(socketClient);
+      
         addKeyListener(new TAdapter());
         setFocusable(true);
 
