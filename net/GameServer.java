@@ -1,5 +1,6 @@
 package net;
 
+import game.Paddle;
 import game.PlayerMP;
 
 import java.io.IOException;
@@ -7,17 +8,21 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import net.packets.Packet;
 import net.packets.Packet.PacketTypes;
 import net.packets.Packet00Login;
+import net.packets.Packet02Move;
 
 public class GameServer extends Thread{
   
   private DatagramSocket socket;
+  private Paddle paddle;
+  private Timer timer;
   
   private List<PlayerMP> connectedPlayers = new ArrayList<PlayerMP>();
 //  private Game game;
@@ -25,11 +30,22 @@ public class GameServer extends Thread{
   public GameServer() {
     try {
       this.socket = new DatagramSocket(3333);
+      timer = new Timer();
+      timer.scheduleAtFixedRate(new ScheduleTask(), 1000, 100);
     } catch (SocketException e) {
       e.printStackTrace();
     }
   }
   
+  class ScheduleTask extends TimerTask {
+
+    public void run() {
+      if(paddle != null) {
+        Packet02Move packet = new Packet02Move("down", paddle.getX());
+        sendDataToAllClients(packet.getData());
+      }
+    }
+}
   public void run() {
     while(true) {
       byte[] data = new byte[1024];
@@ -61,22 +77,20 @@ public class GameServer extends Thread{
       break;
     case LOGIN:
       packet = new Packet00Login(data);
-      System.out.println(address.getHostAddress() + ": " + port
-          + " " + ((Packet00Login)packet).getUsername() + " has connected...");
-      
-      PlayerMP player = new PlayerMP(((Packet00Login)packet).getUsername(), address, port);
-      
-      this.addConnection(player, ((Packet00Login)packet));
-      
+      handleLogin((Packet00Login)packet, address, port);      
       break;
     case DISCONNECTED:
       break;
+    case MOVE:
+      packet = new Packet02Move(data);
+      handleMove((Packet02Move)packet, address, port);
     }
   }
+
   /**
    * player is the player we want to add
    */
-  private void addConnection(PlayerMP player, Packet00Login packet) {
+  public void addConnection(PlayerMP player, Packet00Login packet) {
     boolean alreadyConnected = false;
     for(PlayerMP p : this.connectedPlayers) {
 //      if we have the username in our list
@@ -96,6 +110,11 @@ public class GameServer extends Thread{
     if(!alreadyConnected) {
       this.connectedPlayers.add(player);
     }
+    System.out.println("All connected players: ");
+    for(PlayerMP p : connectedPlayers) {
+      System.out.println("+ " + p.getUsername() + " " + p.ipAddress + ": " + p.port);
+    }
+    
   }
 
   public void sendData(byte[] data, InetAddress ipAddress, int port) {
@@ -114,4 +133,30 @@ public class GameServer extends Thread{
     }
   }
   
+  public int getNumPlayers() {
+    return connectedPlayers.size();
+  }
+  
+  private void handleLogin(Packet00Login packet, InetAddress address, int port) {
+    System.out.println(address.getHostAddress() + ": " + port
+        + " " + packet.getUsername() + " has connected...");
+    
+    PlayerMP player = new PlayerMP(packet.getUsername(), packet.getX(), packet.getY(), address, port);
+    
+    this.addConnection(player, packet);
+  }
+  
+  private void handleMove(Packet02Move packet, InetAddress address, int port) {
+    System.out.println(address.getHostAddress() + ": " + port
+        + " " + packet.getUsername() + " has moved...");    
+    
+    paddle.setX(packet.getX());
+    
+  }
+
+  public void add(Paddle paddle) {
+    if(this.paddle == null) {
+      this.paddle = paddle;
+    }
+  }
 }

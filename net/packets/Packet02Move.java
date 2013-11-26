@@ -3,24 +3,24 @@ package net.packets;
 import net.GameClient;
 import net.GameServer;
 
-public class Packet00Login extends Packet{
+public class Packet02Move extends Packet {
 
   private String username;
-  private int x,y;
+  private int x;
   
-  public Packet00Login(byte[] data) {
-    super(00);
+  public Packet02Move(byte[] data) {
+    super(02);
     String[] dataArray = readData(data).split(",");
     this.username = dataArray[0];
     this.x = Integer.parseInt(dataArray[1]);
-    this.y = Integer.parseInt(dataArray[2]);
+//    this.y = Integer.parseInt(dataArray[2]);
   }
 
-  public Packet00Login(String username, int x, int y) {
-    super(00);
+  public Packet02Move(String username, int x) {
+    super(02);
     this.username = username;
     this.x = x;
-    this.y = y;
+//    this.y = y;
   }
   
 //  send datatype+username to client socket
@@ -35,16 +35,16 @@ public class Packet00Login extends Packet{
   }
 
   public byte[] getData() {
-    return ("00" + this.username + "," + getX() + "," + getY()).getBytes();
-  }
-
-  public int getY() {
-    return x;
+    return ("02" + this.username + "," + getX()).getBytes();
   }
 
   public int getX() {
-    return y;
+    return x;
   }
+
+//  public int getY() {
+//    return y;
+//  }
 
   public String getUsername() {
     return username;

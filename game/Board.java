@@ -26,9 +26,11 @@ public class Board extends JPanel implements Commons {
     Timer timer;
     String message = "Game Over";
     Ball ball;
-    Paddle paddle;
+    public Paddle paddle;
     Brick bricks[];
-
+    Player player;
+    
+    boolean isServer = false;
     boolean ingame = true;
     int timerId;
 
@@ -39,13 +41,22 @@ public class Board extends JPanel implements Commons {
       if(JOptionPane.showConfirmDialog(this, "Do you want to run the server") == 0) {
         socketServer = new GameServer();
         socketServer.start();
+        isServer = true;
       }
       
       
       
-      socketClient = new GameClient("localhost");
+      socketClient = new GameClient("localhost", isServer);
       socketClient.start();
-      Packet00Login loginPacket = new Packet00Login(JOptionPane.showInputDialog(this, "Please enter username"));
+      player = new PlayerMP(JOptionPane.showInputDialog(this, "Please enter username"), 200, 200, null, -1);
+      Packet00Login loginPacket = new Packet00Login(player.getUsername(), player.getX(), player.getY());
+      
+      if (socketServer != null) {
+        socketServer.addConnection((PlayerMP) player, loginPacket);
+      }
+      
+      
+      
       loginPacket.writeData(socketClient);
       
         addKeyListener(new TAdapter());
@@ -66,8 +77,13 @@ public class Board extends JPanel implements Commons {
 
         ball = new Ball();
         paddle = new Paddle();
-
-
+//        System.out.println(paddle.getX());
+        if(isServer) {
+          socketServer.add(paddle);          
+        }
+        else {
+          socketClient.add(paddle);
+        }
         int k = 0;
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 6; j++) {
@@ -80,7 +96,7 @@ public class Board extends JPanel implements Commons {
 
     public void paint(Graphics g) {
         super.paint(g);
-
+        
         if (ingame) {
             g.drawImage(ball.getImage(), ball.getX(), ball.getY(),
                         ball.getWidth(), ball.getHeight(), this);
@@ -125,7 +141,7 @@ public class Board extends JPanel implements Commons {
     class ScheduleTask extends TimerTask {
 
         public void run() {
-
+            
             ball.move();
             paddle.move();
             checkCollision();

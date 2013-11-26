@@ -1,5 +1,7 @@
 package net;
 
+import game.Board;
+import game.Paddle;
 import game.PlayerMP;
 
 import java.io.IOException;
@@ -12,17 +14,22 @@ import java.net.UnknownHostException;
 import net.packets.Packet;
 import net.packets.Packet00Login;
 import net.packets.Packet.PacketTypes;
+import net.packets.Packet02Move;
 
 public class GameClient extends Thread{
   
   private InetAddress ipAddress;
   private DatagramSocket socket;
+  private Paddle paddle;
+  private boolean isServer;
+//  private Board board;
 //  private Game game;
   
-  public GameClient(String ipAddress) {
+  public GameClient(String ipAddress, boolean isServer) {
     try {
       this.ipAddress = InetAddress.getByName(ipAddress);
       this.socket = new DatagramSocket();
+      this.isServer = isServer;
     } catch (UnknownHostException e) {
       e.printStackTrace();
     } catch (SocketException e) {
@@ -56,19 +63,23 @@ public class GameClient extends Thread{
       break;
     case LOGIN:
       packet = new Packet00Login(data);
-      System.out.println(address.getHostAddress() + ": " + port
-          + " " + ((Packet00Login)packet).getUsername() + " has joined...");
-      
-      PlayerMP player = new PlayerMP(((Packet00Login)packet).getUsername(), address, port);
-      
-      
+      handleLogin((Packet00Login)packet, address, port);
       break;
     case DISCONNECTED:
       break;
+    case MOVE:
+      if(!isServer) {
+        packet = new Packet02Move(data);
+        handleMove((Packet02Move)packet, address, port);
+      }
     }
   }
   
-  
+  private void handleMove(Packet02Move packet, InetAddress address, int port) {
+    System.out.println("Another player moved");
+    paddle.setX(packet.getX());
+  }
+
   public void sendData(byte[] data) {
     DatagramPacket packet = new DatagramPacket(data, data.length, ipAddress, 3333);
     try {
@@ -77,5 +88,17 @@ public class GameClient extends Thread{
       e.printStackTrace();
     }
   }
+
+  private void handleLogin(Packet00Login packet, InetAddress address, int port) {
+    System.out.println(address.getHostAddress() + ": " + port
+        + " " + packet.getUsername() + " has joined...");
+    
+    PlayerMP player = new PlayerMP(packet.getUsername(), packet.getX(), packet.getY(), address, port);
+  }
   
+  public void add(Paddle paddle) {
+    if(this.paddle == null) {
+      this.paddle = paddle;
+    }
+  }
 }
