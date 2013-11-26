@@ -1,5 +1,6 @@
 package net;
 
+import game.Ball;
 import game.Paddle;
 import game.PlayerMP;
 
@@ -22,6 +23,7 @@ public class GameServer extends Thread{
   
   private DatagramSocket socket;
   private Paddle paddle;
+  private Ball ball;
   private Timer timer;
   
   private List<PlayerMP> connectedPlayers = new ArrayList<PlayerMP>();
@@ -31,7 +33,7 @@ public class GameServer extends Thread{
     try {
       this.socket = new DatagramSocket(3333);
       timer = new Timer();
-      timer.scheduleAtFixedRate(new ScheduleTask(), 1000, 100);
+      timer.scheduleAtFixedRate(new ScheduleTask(), 10000, 20);
     } catch (SocketException e) {
       e.printStackTrace();
     }
@@ -41,7 +43,7 @@ public class GameServer extends Thread{
 
     public void run() {
       if(paddle != null) {
-        Packet02Move packet = new Packet02Move("down", paddle.getX());
+        Packet02Move packet = new Packet02Move("down", paddle.getX(), ball.getX(), ball.getY());
         sendDataToAllClients(packet.getData());
       }
     }
@@ -124,7 +126,7 @@ public class GameServer extends Thread{
     } catch (IOException e) {
       e.printStackTrace();
     }
-    System.out.println("Server sending: " + new String(packet.getData()));
+//    System.out.println("Server sending: " + new String(packet.getData()));
   }
 
   public void sendDataToAllClients(byte[] data) {
@@ -147,16 +149,24 @@ public class GameServer extends Thread{
   }
   
   private void handleMove(Packet02Move packet, InetAddress address, int port) {
-    System.out.println(address.getHostAddress() + ": " + port
-        + " " + packet.getUsername() + " has moved...");    
+//    System.out.println(address.getHostAddress() + ": " + port
+//        + " " + packet.getUsername() + " has moved...");    
     
     paddle.setX(packet.getX());
+    ball.setX(packet.getBallX());
+    ball.setY(packet.getBallY());
     
   }
 
-  public void add(Paddle paddle) {
+  public void addPaddle(Paddle paddle) {
     if(this.paddle == null) {
       this.paddle = paddle;
+    }
+  }
+  
+  public void addBall(Ball ball) {
+    if(this.ball == null) {
+      this.ball = ball;
     }
   }
 }

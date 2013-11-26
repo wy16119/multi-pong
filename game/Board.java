@@ -79,10 +79,12 @@ public class Board extends JPanel implements Commons {
         paddle = new Paddle();
 //        System.out.println(paddle.getX());
         if(isServer) {
-          socketServer.add(paddle);          
+          socketServer.addPaddle(paddle);       
+          socketServer.addBall(ball); 
         }
         else {
-          socketClient.add(paddle);
+          socketClient.addPaddle(paddle);
+          socketClient.addBall(ball); 
         }
         int k = 0;
         for (int i = 0; i < 5; i++) {

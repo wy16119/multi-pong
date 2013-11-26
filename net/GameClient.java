@@ -1,6 +1,6 @@
 package net;
 
-import game.Board;
+import game.Ball;
 import game.Paddle;
 import game.PlayerMP;
 
@@ -12,8 +12,8 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 
 import net.packets.Packet;
-import net.packets.Packet00Login;
 import net.packets.Packet.PacketTypes;
+import net.packets.Packet00Login;
 import net.packets.Packet02Move;
 
 public class GameClient extends Thread{
@@ -21,6 +21,7 @@ public class GameClient extends Thread{
   private InetAddress ipAddress;
   private DatagramSocket socket;
   private Paddle paddle;
+  private Ball ball;
   private boolean isServer;
 //  private Board board;
 //  private Game game;
@@ -47,7 +48,7 @@ public class GameClient extends Thread{
         e.printStackTrace();
       }
       this.parsePacket(packet.getData(), packet.getAddress(), packet.getPort());
-      System.out.println("Client received: " + new String(packet.getData()));
+//      System.out.println("Client received: " + new String(packet.getData()));
     }
   }
 
@@ -76,8 +77,11 @@ public class GameClient extends Thread{
   }
   
   private void handleMove(Packet02Move packet, InetAddress address, int port) {
-    System.out.println("Another player moved");
+//    System.out.println("Another player moved");
     paddle.setX(packet.getX());
+    ball.setX(packet.getBallX());
+    ball.setY(packet.getBallY());
+    System.out.println("++++" + ball.getX() + ", " + ball.getY());
   }
 
   public void sendData(byte[] data) {
@@ -96,9 +100,15 @@ public class GameClient extends Thread{
     PlayerMP player = new PlayerMP(packet.getUsername(), packet.getX(), packet.getY(), address, port);
   }
   
-  public void add(Paddle paddle) {
+  public void addPaddle(Paddle paddle) {
     if(this.paddle == null) {
       this.paddle = paddle;
+    }
+  }
+  
+  public void addBall(Ball ball) {
+    if(this.ball == null) {
+      this.ball = ball;
     }
   }
 }
