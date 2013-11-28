@@ -2,6 +2,7 @@ package net;
 
 import game.Ball;
 import game.Paddle;
+//import game.Player;
 import game.PlayerMP;
 
 import java.io.IOException;
@@ -18,11 +19,13 @@ import net.packets.Packet;
 import net.packets.Packet.PacketTypes;
 import net.packets.Packet00Login;
 import net.packets.Packet02Move;
+import App.Game;
 
 public class GameServer extends Thread{
   
   private DatagramSocket socket;
   private Paddle paddle;
+  private PlayerMP player;
   private Ball ball;
   private Timer timer;
   
@@ -33,7 +36,7 @@ public class GameServer extends Thread{
     try {
       this.socket = new DatagramSocket(3333);
       timer = new Timer();
-      timer.scheduleAtFixedRate(new ScheduleTask(), 10000, 20);
+      timer.scheduleAtFixedRate(new ScheduleTask(), 10000, 10);
     } catch (SocketException e) {
       e.printStackTrace();
     }
@@ -42,12 +45,16 @@ public class GameServer extends Thread{
   class ScheduleTask extends TimerTask {
 
     public void run() {
-      if(paddle != null) {
-        Packet02Move packet = new Packet02Move("down", paddle.getX(), ball.getX(), ball.getY());
-        sendDataToAllClients(packet.getData());
+//      if(player != null) {
+//        Packet02Move packet = new Packet02Move("down", player.getX(), ball.getX(), ball.getY());
+//        sendDataToAllClients(packet.getData());
+//      }
+      for(PlayerMP p : connectedPlayers) {
+        Packet02Move packet = new Packet02Move("down", p.getX(), ball.getX(), ball.getY());
+        sendDataToAllClients(packet.getData());       
       }
     }
-}
+  }
   public void run() {
     while(true) {
       byte[] data = new byte[1024];
@@ -93,25 +100,26 @@ public class GameServer extends Thread{
    * player is the player we want to add
    */
   public void addConnection(PlayerMP player, Packet00Login packet) {
-    boolean alreadyConnected = false;
+//    boolean alreadyConnected = false;
     for(PlayerMP p : this.connectedPlayers) {
 //      if we have the username in our list
-      if(player.getUsername().equalsIgnoreCase(p.getUsername())) {
-        if(p.ipAddress == null) 
-          p.ipAddress = player.ipAddress;
-        if(p.port == -1)
-          p.port = player.port;
-        alreadyConnected = true;
-      }
+//      if(player.getUsername().equalsIgnoreCase(p.getUsername())) {
+//        if(p.ipAddress == null) 
+//          p.ipAddress = player.ipAddress;
+//        if(p.port == -1)
+//          p.port = player.port;
+//        alreadyConnected = true;
+//      }
 //    if not connected, sent data to the socket that is 
 //      connected to the player who is not connected
-      else {
-        sendData(packet.getData(), p.ipAddress, p.port);
-      }
+//      else {
+//        sendData(packet.getData(), p.ipAddress, p.port);
+//      }
+      sendDataToAllClients(packet.getData());
     }
-    if(!alreadyConnected) {
+//    if(!alreadyConnected) {
       this.connectedPlayers.add(player);
-    }
+//    }
     System.out.println("All connected players: ");
     for(PlayerMP p : connectedPlayers) {
       System.out.println("+ " + p.getUsername() + " " + p.ipAddress + ": " + p.port);
@@ -143,30 +151,41 @@ public class GameServer extends Thread{
     System.out.println(address.getHostAddress() + ": " + port
         + " " + packet.getUsername() + " has connected...");
     
-    PlayerMP player = new PlayerMP(packet.getUsername(), packet.getX(), packet.getY(), address, port);
-    
+//    PlayerMP player = new PlayerMP(packet.getUsername(), packet.getX(), packet.getY(), address, port);
+    player = new PlayerMP(packet.getUsername(), packet.getX(), packet.getY(), address, port);
+    ball = new Ball();
     this.addConnection(player, packet);
+    if(getNumPlayers() == 2) {
+      System.out.println("RRRRRRRRRReady");
+      new Game(connectedPlayers, this);
+      
+    }
   }
   
   private void handleMove(Packet02Move packet, InetAddress address, int port) {
 //    System.out.println(address.getHostAddress() + ": " + port
 //        + " " + packet.getUsername() + " has moved...");    
     
-    paddle.setX(packet.getX());
+    player.setX(packet.getX());
     ball.setX(packet.getBallX());
     ball.setY(packet.getBallY());
     
   }
-
-  public void addPaddle(Paddle paddle) {
-    if(this.paddle == null) {
-      this.paddle = paddle;
-    }
-  }
-  
+//
+//  public void addPaddle(Paddle paddle) {
+//    if(this.paddle == null) {
+//      this.paddle = paddle;
+//    }
+//  }
+//  
   public void addBall(Ball ball) {
     if(this.ball == null) {
       this.ball = ball;
     }
+  }
+
+  public void updateBall(Ball ball) {
+    this.ball.setX(ball.getX());
+    this.ball.setY(ball.getY());
   }
 }

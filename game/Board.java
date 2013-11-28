@@ -28,32 +28,32 @@ public class Board extends JPanel implements Commons {
     Ball ball;
     public Paddle paddle;
     Brick bricks[];
-    Player player;
+    PlayerMP player;
     
-    boolean isServer = false;
+//    boolean isServer = false;
     boolean ingame = true;
     int timerId;
 
-    private GameServer socketServer;
+//    private GameServer socketServer;
     private GameClient socketClient;
     
     public Board() {
-      if(JOptionPane.showConfirmDialog(this, "Do you want to run the server") == 0) {
-        socketServer = new GameServer();
-        socketServer.start();
-        isServer = true;
-      }
+//      if(JOptionPane.showConfirmDialog(this, "Do you want to run the server") == 0) {
+//        socketServer = new GameServer();
+//        socketServer.start();
+//        isServer = true;
+//      }
       
       
       
-      socketClient = new GameClient("localhost", isServer);
+      socketClient = new GameClient("localhost");
       socketClient.start();
-      player = new PlayerMP(JOptionPane.showInputDialog(this, "Please enter username"), 200, 200, null, -1);
+      player = new PlayerMP(JOptionPane.showInputDialog(this, "Please enter username"), 200, 360, null, -1);
       Packet00Login loginPacket = new Packet00Login(player.getUsername(), player.getX(), player.getY());
       
-      if (socketServer != null) {
-        socketServer.addConnection((PlayerMP) player, loginPacket);
-      }
+//      if (socketServer != null) {
+//        socketServer.addConnection((PlayerMP) player, loginPacket);
+//      }
       
       
       
@@ -76,16 +76,18 @@ public class Board extends JPanel implements Commons {
     public void gameInit() {
 
         ball = new Ball();
-        paddle = new Paddle();
+        socketClient.addPlayer(player);
+//        player = new Player(message, timerId, timerId);
 //        System.out.println(paddle.getX());
-        if(isServer) {
-          socketServer.addPaddle(paddle);       
-          socketServer.addBall(ball); 
-        }
-        else {
-          socketClient.addPaddle(paddle);
+//        if(isServer) {
+//          socketServer.addPaddle(paddle);       
+//          socketServer.addBall(ball); 
+//        }
+//        else {
+//        paddle = new Paddle();
+//          socketClient.addPaddle(paddle);
           socketClient.addBall(ball); 
-        }
+//        }
         int k = 0;
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 6; j++) {
@@ -102,8 +104,8 @@ public class Board extends JPanel implements Commons {
         if (ingame) {
             g.drawImage(ball.getImage(), ball.getX(), ball.getY(),
                         ball.getWidth(), ball.getHeight(), this);
-            g.drawImage(paddle.getImage(), paddle.getX(), paddle.getY(),
-                        paddle.getWidth(), paddle.getHeight(), this);
+            g.drawImage(player.getImage(), player.getX(), player.getY(),
+                        player.getWidth(), player.getHeight(), this);
 
             for (int i = 0; i < 30; i++) {
                 if (!bricks[i].isDestroyed())
@@ -131,11 +133,11 @@ public class Board extends JPanel implements Commons {
     private class TAdapter extends KeyAdapter {
 
         public void keyReleased(KeyEvent e) {
-            paddle.keyReleased(e);
+            player.keyReleased(e);
         }
 
         public void keyPressed(KeyEvent e) {
-            paddle.keyPressed(e);
+            player.keyPressed(e);
         }
     }
 
@@ -144,8 +146,8 @@ public class Board extends JPanel implements Commons {
 
         public void run() {
             
-            ball.move();
-            paddle.move();
+//            ball.move();
+            player.move();
             checkCollision();
             repaint();
 
@@ -174,9 +176,9 @@ public class Board extends JPanel implements Commons {
             }
         }
 
-        if ((ball.getRect()).intersects(paddle.getRect())) {
+        if ((ball.getRect()).intersects(player.getRect())) {
 
-            int paddleLPos = (int)paddle.getRect().getMinX();
+            int paddleLPos = (int)player.getRect().getMinX();
             int ballLPos = (int)ball.getRect().getMinX();
 
             int first = paddleLPos + 8;

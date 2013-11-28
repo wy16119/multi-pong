@@ -2,6 +2,7 @@ package net;
 
 import game.Ball;
 import game.Paddle;
+//import game.Player;
 import game.PlayerMP;
 
 import java.io.IOException;
@@ -10,6 +11,8 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import net.packets.Packet;
 import net.packets.Packet.PacketTypes;
@@ -21,16 +24,20 @@ public class GameClient extends Thread{
   private InetAddress ipAddress;
   private DatagramSocket socket;
   private Paddle paddle;
+  private PlayerMP player;
   private Ball ball;
   private boolean isServer;
+  private Timer timer;
 //  private Board board;
 //  private Game game;
   
-  public GameClient(String ipAddress, boolean isServer) {
+  public GameClient(String ipAddress) {
     try {
       this.ipAddress = InetAddress.getByName(ipAddress);
       this.socket = new DatagramSocket();
-      this.isServer = isServer;
+      timer = new Timer();
+      timer.scheduleAtFixedRate(new ScheduleTask(), 10000, 20);
+//      this.isServer = isServer;
     } catch (UnknownHostException e) {
       e.printStackTrace();
     } catch (SocketException e) {
@@ -52,6 +59,16 @@ public class GameClient extends Thread{
     }
   }
 
+  class ScheduleTask extends TimerTask {
+
+    public void run() {
+//      if(paddle != null) {
+        Packet02Move packet = new Packet02Move(player.getUsername(), player.getX(), ball.getX(), ball.getY());
+        sendData(packet.getData());
+//      }
+    }
+  }
+  
   //take all packets we get, find what packet it is and how to deal with it
   private void parsePacket(byte[] data, InetAddress address, int port) {
     String message = new String(data).trim(); 
@@ -78,10 +95,11 @@ public class GameClient extends Thread{
   
   private void handleMove(Packet02Move packet, InetAddress address, int port) {
 //    System.out.println("Another player moved");
-    paddle.setX(packet.getX());
+    
+    player.setX(packet.getX());
     ball.setX(packet.getBallX());
     ball.setY(packet.getBallY());
-    System.out.println("++++" + ball.getX() + ", " + ball.getY());
+//    System.out.println("++++" + ball.getX() + ", " + ball.getY());
   }
 
   public void sendData(byte[] data) {
@@ -100,9 +118,10 @@ public class GameClient extends Thread{
     PlayerMP player = new PlayerMP(packet.getUsername(), packet.getX(), packet.getY(), address, port);
   }
   
-  public void addPaddle(Paddle paddle) {
-    if(this.paddle == null) {
-      this.paddle = paddle;
+  public void addPlayer(PlayerMP player) {
+    System.out.println("new player added in client");
+    if(this.player == null) {
+      this.player = player;
     }
   }
   
