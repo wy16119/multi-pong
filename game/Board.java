@@ -69,6 +69,7 @@ public class Board extends JPanel implements Commons {
         ball = new Ball();
         socketClient.addPlayer(player);
         socketClient.addBall(ball); 
+        socketClient.addBricks(bricks);
         int k = 0;
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 6; j++) {
@@ -131,9 +132,8 @@ public class Board extends JPanel implements Commons {
 
         public void run() {
             
-//            ball.move();
             player.move();
-            checkCollision();
+//            checkCollision();
             repaint();
 
         }

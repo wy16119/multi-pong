@@ -1,6 +1,8 @@
 package net;
 
 import game.Ball;
+import game.Brick;
+import game.Commons;
 import game.PlayerMP;
 
 import java.io.IOException;
@@ -17,12 +19,14 @@ import net.packets.Packet;
 import net.packets.Packet.PacketTypes;
 import net.packets.Packet00Login;
 import net.packets.Packet02Move;
+import net.packets.Packet03Brick;
 import App.Game;
 
-public class GameServer extends Thread{
+public class GameServer extends Thread implements Commons{
   
   private DatagramSocket socket;
   private Ball ball = new Ball();
+  private Brick[] bricks = new Brick[NUM_BRICKS];
   private Timer timer;
   private boolean inGame = false;
   
@@ -45,7 +49,16 @@ public class GameServer extends Thread{
       if(inGame) {
         for(PlayerMP p : connectedPlayers) {
           Packet02Move packet = new Packet02Move(p.getUsername(), p.getX(), ball.getX(), ball.getY());
-          sendDataToAllClients(packet.getData());       
+          sendDataToAllClients(packet.getData()); 
+          boolean[] bricksBool = new boolean[NUM_BRICKS]; 
+          for(int i = 0; i < NUM_BRICKS; i++) {
+            if(bricks[i].isDestroyed())
+              bricksBool[i] = false;
+            else
+              bricksBool[i] = true;
+          } 
+          Packet03Brick brickPacket = new Packet03Brick(bricksBool);
+          sendDataToAllClients(brickPacket.getData());
         }
       }
     }
@@ -142,9 +155,9 @@ public class GameServer extends Thread{
     
     PlayerMP player = new PlayerMP(packet.getUsername(), packet.getX(), packet.getY(), address, port);
     this.addConnection(player, packet);
-    if(getNumPlayers() == 2) {
+    if(getNumPlayers() == NUM_PLAYERS) {
       System.out.println("RRRRRRRRRReady");
-      new Game(connectedPlayers, this, this.ball);
+      new Game(connectedPlayers, this, this.ball, this.bricks);
       inGame = true;
     }
   }

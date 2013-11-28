@@ -1,6 +1,8 @@
 package net;
 
 import game.Ball;
+import game.Brick;
+import game.Commons;
 import game.PlayerMP;
 
 import java.io.IOException;
@@ -14,23 +16,21 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import App.Game;
 import net.packets.Packet;
 import net.packets.Packet.PacketTypes;
 import net.packets.Packet00Login;
 import net.packets.Packet02Move;
+import net.packets.Packet03Brick;
 
-public class GameClient extends Thread{
+public class GameClient extends Thread implements Commons {
   
   private InetAddress ipAddress;
   private DatagramSocket socket;
   private PlayerMP myPlayer;
   private Ball ball;
-  private boolean isServer;
+  private Brick bricks[];
   private Timer timer;
   private List<PlayerMP> connectedPlayers = new ArrayList<PlayerMP>();
-//  private Board board;
-//  private Game game;
   
   public GameClient(String ipAddress) {
     try {
@@ -85,19 +85,23 @@ public class GameClient extends Thread{
     case DISCONNECTED:
       break;
     case MOVE:
-      if(!isServer) {
-        packet = new Packet02Move(data);
-        handleMove((Packet02Move)packet, address, port);
-      }
+      packet = new Packet02Move(data);
+      handleMove((Packet02Move)packet, address, port);
+      break;
+    case BRICK:
+      packet = new Packet03Brick(data);
+      handleBrick((Packet03Brick)packet, address, port);
     }
   }
   
+  private void handleBrick(Packet03Brick packet, InetAddress address, int port) {
+    boolean[] brickBool = packet.getBricks();
+    for(int i = 0; i < NUM_BRICKS; i++) {
+      this.bricks[i].setDestroyed(brickBool[i]);
+    }
+  }
+
   private void handleMove(Packet02Move packet, InetAddress address, int port) {
-//    for(PlayerMP movedPlayer : connectedPlayers) {
-//      if(!movedPlayer.getUsername().equalsIgnoreCase(packet.getUsername())) {
-//        movedPlayer.setX(packet.getX());
-//      }
-//    }
     if(!packet.getUsername().equalsIgnoreCase(myPlayer.getUsername())) {
       for(PlayerMP movedPlayer : connectedPlayers) {
         if(movedPlayer.getUsername().equalsIgnoreCase(packet.getUsername())) {
@@ -137,12 +141,14 @@ public class GameClient extends Thread{
   }
   
   public void addBall(Ball ball) {
-    if(this.ball == null) {
-      this.ball = ball;
-    }
+    this.ball = ball;
   }
 
   public List<PlayerMP> getConnectedPlayers(){
     return this.connectedPlayers;
+  }
+
+  public void addBricks(Brick[] bricks) {
+    this.bricks = bricks;
   }
 }

@@ -32,11 +32,11 @@ public class Game extends JPanel implements Commons {
     int timerId;
     
     private List<PlayerMP> connectedPlayers;
-    public Game(List<PlayerMP> players, GameServer socketServer, Ball ball) {
+    public Game(List<PlayerMP> players, GameServer socketServer, Ball ball, Brick[] bricks) {
         connectedPlayers = players; 
         this.socketServer = socketServer;
-        bricks = new Brick[30];
         this.ball = ball;
+        this.bricks = bricks;
         setDoubleBuffered(true);
         gameInit();
         timer = new Timer();
