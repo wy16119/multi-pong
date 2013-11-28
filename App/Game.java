@@ -33,15 +33,15 @@ public class Game extends JPanel implements Commons {
     int timerId;
     
     private List<PlayerMP> connectedPlayers = new ArrayList<PlayerMP>();
-    public Game(List<PlayerMP> players, GameServer socketServer) {
+    public Game(List<PlayerMP> players, GameServer socketServer, Ball ball) {
         connectedPlayers = players; 
         this.socketServer = socketServer;
         bricks = new Brick[30];
-        ball = new Ball();
+        this.ball = ball;
         setDoubleBuffered(true);
         gameInit();
         timer = new Timer();
-        timer.scheduleAtFixedRate(new ScheduleTask(), 1000, 10);
+        timer.scheduleAtFixedRate(new ScheduleTask(), 5000, 10);
     }
 
     public void gameInit() {
@@ -68,7 +68,7 @@ public class Game extends JPanel implements Commons {
       public void run() {
 
           ball.move();
-          socketServer.updateBall(ball);
+//          socketServer.updateBall(ball);
 //          System.out.println("ball moving: " + ball.getX());
 //          for(PlayerMP player : connectedPlayers)
 //            player.move();

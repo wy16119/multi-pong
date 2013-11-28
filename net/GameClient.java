@@ -11,9 +11,12 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import App.Game;
 import net.packets.Packet;
 import net.packets.Packet.PacketTypes;
 import net.packets.Packet00Login;
@@ -24,10 +27,11 @@ public class GameClient extends Thread{
   private InetAddress ipAddress;
   private DatagramSocket socket;
   private Paddle paddle;
-  private PlayerMP player;
+  private PlayerMP myPlayer;
   private Ball ball;
   private boolean isServer;
   private Timer timer;
+  private List<PlayerMP> connectedPlayers = new ArrayList<PlayerMP>();
 //  private Board board;
 //  private Game game;
   
@@ -46,6 +50,7 @@ public class GameClient extends Thread{
   }
   
   public void run() {
+    System.out.println("client started...");
     while(true) {
       byte[] data = new byte[1024];
       DatagramPacket packet = new DatagramPacket(data, data.length);
@@ -63,7 +68,7 @@ public class GameClient extends Thread{
 
     public void run() {
 //      if(paddle != null) {
-        Packet02Move packet = new Packet02Move(player.getUsername(), player.getX(), ball.getX(), ball.getY());
+        Packet02Move packet = new Packet02Move(myPlayer.getUsername(), myPlayer.getX(), ball.getX(), ball.getY());
         sendData(packet.getData());
 //      }
     }
@@ -94,11 +99,9 @@ public class GameClient extends Thread{
   }
   
   private void handleMove(Packet02Move packet, InetAddress address, int port) {
-//    System.out.println("Another player moved");
-    
-    player.setX(packet.getX());
-    ball.setX(packet.getBallX());
-    ball.setY(packet.getBallY());
+    myPlayer.setX(packet.getX());
+    this.ball.setX(packet.getBallX());
+    this.ball.setY(packet.getBallY());
 //    System.out.println("++++" + ball.getX() + ", " + ball.getY());
   }
 
@@ -116,13 +119,18 @@ public class GameClient extends Thread{
         + " " + packet.getUsername() + " has joined...");
     
     PlayerMP player = new PlayerMP(packet.getUsername(), packet.getX(), packet.getY(), address, port);
+    this.addConnection(player, packet);
+  }
+  
+  public void addConnection(PlayerMP player, Packet00Login packet) {
+    this.connectedPlayers.add(player);
   }
   
   public void addPlayer(PlayerMP player) {
     System.out.println("new player added in client");
-    if(this.player == null) {
-      this.player = player;
-    }
+//    if(this.myPlayer == null) {
+      this.myPlayer = player;
+//    }
   }
   
   public void addBall(Ball ball) {

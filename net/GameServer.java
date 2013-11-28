@@ -26,8 +26,9 @@ public class GameServer extends Thread{
   private DatagramSocket socket;
   private Paddle paddle;
   private PlayerMP player;
-  private Ball ball;
+  private Ball ball = new Ball();
   private Timer timer;
+  private boolean inGame = false;
   
   private List<PlayerMP> connectedPlayers = new ArrayList<PlayerMP>();
 //  private Game game;
@@ -35,26 +36,28 @@ public class GameServer extends Thread{
   public GameServer() {
     try {
       this.socket = new DatagramSocket(3333);
-      timer = new Timer();
-      timer.scheduleAtFixedRate(new ScheduleTask(), 10000, 10);
+//      timer = new Timer();
+//      timer.scheduleAtFixedRate(new ScheduleTask(), 10000, 10);
     } catch (SocketException e) {
       e.printStackTrace();
     }
   }
   
-  class ScheduleTask extends TimerTask {
-
-    public void run() {
-//      if(player != null) {
-//        Packet02Move packet = new Packet02Move("down", player.getX(), ball.getX(), ball.getY());
-//        sendDataToAllClients(packet.getData());
+//  class ScheduleTask extends TimerTask {
+//
+//    public void run() {
+////      if(player != null) {
+////        Packet02Move packet = new Packet02Move("down", player.getX(), ball.getX(), ball.getY());
+////        sendDataToAllClients(packet.getData());
+////      }
+//      if(inGame = true) {
+//        for(PlayerMP p : connectedPlayers) {
+//          Packet02Move packet = new Packet02Move("down", p.getX(), ball.getX(), ball.getY());
+//          sendDataToAllClients(packet.getData());       
+//        }
 //      }
-      for(PlayerMP p : connectedPlayers) {
-        Packet02Move packet = new Packet02Move("down", p.getX(), ball.getX(), ball.getY());
-        sendDataToAllClients(packet.getData());       
-      }
-    }
-  }
+//    }
+//  }
   public void run() {
     while(true) {
       byte[] data = new byte[1024];
@@ -65,6 +68,12 @@ public class GameServer extends Thread{
         e.printStackTrace();
       }
       this.parsePacket(packet.getData(), packet.getAddress(), packet.getPort());
+      if(inGame) {
+        for(PlayerMP p : connectedPlayers) {
+          Packet02Move packett = new Packet02Move("down", p.getX(), ball.getX(), ball.getY());
+          packett.writeData(this);     
+        }
+      }
 //      String message = new String(packet.getData());
 //      if(message.trim().equalsIgnoreCase("ping")) {
 //        System.out.println("Client > " + message);
@@ -151,25 +160,24 @@ public class GameServer extends Thread{
     System.out.println(address.getHostAddress() + ": " + port
         + " " + packet.getUsername() + " has connected...");
     
-//    PlayerMP player = new PlayerMP(packet.getUsername(), packet.getX(), packet.getY(), address, port);
-    player = new PlayerMP(packet.getUsername(), packet.getX(), packet.getY(), address, port);
-    ball = new Ball();
+    PlayerMP player = new PlayerMP(packet.getUsername(), packet.getX(), packet.getY(), address, port);
+//    player = new PlayerMP(packet.getUsername(), packet.getX(), packet.getY(), address, port);
+//    this.ball = new Ball();
     this.addConnection(player, packet);
     if(getNumPlayers() == 2) {
       System.out.println("RRRRRRRRRReady");
-      new Game(connectedPlayers, this);
-      
+      new Game(connectedPlayers, this, this.ball);
+      inGame = true;
     }
   }
   
   private void handleMove(Packet02Move packet, InetAddress address, int port) {
 //    System.out.println(address.getHostAddress() + ": " + port
 //        + " " + packet.getUsername() + " has moved...");    
-    
-    player.setX(packet.getX());
-    ball.setX(packet.getBallX());
-    ball.setY(packet.getBallY());
-    
+    for(PlayerMP player : connectedPlayers) {
+      if(player.getUsername() == packet.getUsername())
+        player.setX(packet.getX());      
+    }
   }
 //
 //  public void addPaddle(Paddle paddle) {
@@ -178,14 +186,14 @@ public class GameServer extends Thread{
 //    }
 //  }
 //  
-  public void addBall(Ball ball) {
-    if(this.ball == null) {
-      this.ball = ball;
-    }
-  }
+//  public void addBall(Ball ball) {
+//    if(this.ball == null) {
+//      this.ball = ball;
+//    }
+//  }
 
-  public void updateBall(Ball ball) {
-    this.ball.setX(ball.getX());
-    this.ball.setY(ball.getY());
-  }
+//  public void updateBall(Ball ball) {
+//    this.ball.setX(ball.getX());
+//    this.ball.setY(ball.getY());
+//  }
 }
