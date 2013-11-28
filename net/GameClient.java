@@ -40,8 +40,7 @@ public class GameClient extends Thread{
       this.ipAddress = InetAddress.getByName(ipAddress);
       this.socket = new DatagramSocket();
       timer = new Timer();
-      timer.scheduleAtFixedRate(new ScheduleTask(), 10000, 20);
-//      this.isServer = isServer;
+      timer.scheduleAtFixedRate(new ScheduleTask(), 5000, 20);
     } catch (UnknownHostException e) {
       e.printStackTrace();
     } catch (SocketException e) {
@@ -67,10 +66,8 @@ public class GameClient extends Thread{
   class ScheduleTask extends TimerTask {
 
     public void run() {
-//      if(paddle != null) {
         Packet02Move packet = new Packet02Move(myPlayer.getUsername(), myPlayer.getX(), ball.getX(), ball.getY());
         sendData(packet.getData());
-//      }
     }
   }
   
@@ -99,10 +96,22 @@ public class GameClient extends Thread{
   }
   
   private void handleMove(Packet02Move packet, InetAddress address, int port) {
-    myPlayer.setX(packet.getX());
+//    for(PlayerMP movedPlayer : connectedPlayers) {
+//      if(!movedPlayer.getUsername().equalsIgnoreCase(packet.getUsername())) {
+//        movedPlayer.setX(packet.getX());
+//      }
+//    }
+    if(!packet.getUsername().equalsIgnoreCase(myPlayer.getUsername())) {
+      for(PlayerMP movedPlayer : connectedPlayers) {
+        if(movedPlayer.getUsername().equalsIgnoreCase(packet.getUsername())) {
+          System.out.println("another player moved: " + packet.getX());
+          movedPlayer.setX(packet.getX());
+        }
+      }      
+    }
+      
     this.ball.setX(packet.getBallX());
     this.ball.setY(packet.getBallY());
-//    System.out.println("++++" + ball.getX() + ", " + ball.getY());
   }
 
   public void sendData(byte[] data) {
@@ -117,7 +126,10 @@ public class GameClient extends Thread{
   private void handleLogin(Packet00Login packet, InetAddress address, int port) {
     System.out.println(address.getHostAddress() + ": " + port
         + " " + packet.getUsername() + " has joined...");
-    
+//    if(!packet.getUsername().equalsIgnoreCase(myPlayer.getUsername())) {
+//      PlayerMP player = new PlayerMP(packet.getUsername(), packet.getX(), packet.getY(), address, port);
+//      this.addConnection(player, packet);
+//    }
     PlayerMP player = new PlayerMP(packet.getUsername(), packet.getX(), packet.getY(), address, port);
     this.addConnection(player, packet);
   }
@@ -128,14 +140,17 @@ public class GameClient extends Thread{
   
   public void addPlayer(PlayerMP player) {
     System.out.println("new player added in client");
-//    if(this.myPlayer == null) {
       this.myPlayer = player;
-//    }
+      this.connectedPlayers.add(myPlayer);
   }
   
   public void addBall(Ball ball) {
     if(this.ball == null) {
       this.ball = ball;
     }
+  }
+
+  public List<PlayerMP> getConnectedPlayers(){
+    return this.connectedPlayers;
   }
 }

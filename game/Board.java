@@ -9,6 +9,8 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -18,6 +20,7 @@ import javax.swing.JPanel;
 import net.GameClient;
 import net.GameServer;
 import net.packets.Packet00Login;
+import net.packets.Packet02Move;
 
 
 public class Board extends JPanel implements Commons {
@@ -36,14 +39,13 @@ public class Board extends JPanel implements Commons {
 
 //    private GameServer socketServer;
     private GameClient socketClient;
-    
+//    private List<PlayerMP> connectedPlayers;
     public Board() {
 //      if(JOptionPane.showConfirmDialog(this, "Do you want to run the server") == 0) {
 //        socketServer = new GameServer();
 //        socketServer.start();
 //        isServer = true;
 //      }
-      
       
       
       socketClient = new GameClient("localhost");
@@ -77,6 +79,7 @@ public class Board extends JPanel implements Commons {
 
         ball = new Ball();
         socketClient.addPlayer(player);
+//        socketClient.addConnectedPlayers(connectedPlayers);
 //        player = new Player(message, timerId, timerId);
 //        System.out.println(paddle.getX());
 //        if(isServer) {
@@ -104,8 +107,12 @@ public class Board extends JPanel implements Commons {
         if (ingame) {
             g.drawImage(ball.getImage(), ball.getX(), ball.getY(),
                         ball.getWidth(), ball.getHeight(), this);
-            g.drawImage(player.getImage(), player.getX(), player.getY(),
-                        player.getWidth(), player.getHeight(), this);
+            List<PlayerMP> allPlayers = new ArrayList<PlayerMP>(); 
+            allPlayers = socketClient.getConnectedPlayers();
+            for(PlayerMP player : allPlayers) {
+              g.drawImage(player.getImage(), player.getX(), player.getY(),
+                  player.getWidth(), player.getHeight(), this);
+            }
 
             for (int i = 0; i < 30; i++) {
                 if (!bricks[i].isDestroyed())
@@ -133,11 +140,16 @@ public class Board extends JPanel implements Commons {
     private class TAdapter extends KeyAdapter {
 
         public void keyReleased(KeyEvent e) {
+          System.out.println("Client pressed key");
             player.keyReleased(e);
+//            Packet02Move packet = new Packet02Move(player.getUsername(), player.getX(), ball.getX(), ball.getY());
+//            packet.writeData(socketClient);
         }
 
         public void keyPressed(KeyEvent e) {
             player.keyPressed(e);
+//            Packet02Move packet = new Packet02Move(player.getUsername(), player.getX(), ball.getX(), ball.getY());
+//            packet.writeData(socketClient);
         }
     }
 

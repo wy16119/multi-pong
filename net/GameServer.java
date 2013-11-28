@@ -36,28 +36,25 @@ public class GameServer extends Thread{
   public GameServer() {
     try {
       this.socket = new DatagramSocket(3333);
-//      timer = new Timer();
-//      timer.scheduleAtFixedRate(new ScheduleTask(), 10000, 10);
+      timer = new Timer();
+      timer.scheduleAtFixedRate(new ScheduleTask(), 1000, 10);
     } catch (SocketException e) {
       e.printStackTrace();
     }
   }
   
-//  class ScheduleTask extends TimerTask {
-//
-//    public void run() {
-////      if(player != null) {
-////        Packet02Move packet = new Packet02Move("down", player.getX(), ball.getX(), ball.getY());
-////        sendDataToAllClients(packet.getData());
-////      }
-//      if(inGame = true) {
-//        for(PlayerMP p : connectedPlayers) {
-//          Packet02Move packet = new Packet02Move("down", p.getX(), ball.getX(), ball.getY());
-//          sendDataToAllClients(packet.getData());       
-//        }
-//      }
-//    }
-//  }
+  class ScheduleTask extends TimerTask {
+
+    public void run() {
+      if(inGame) {
+        for(PlayerMP p : connectedPlayers) {
+          Packet02Move packet = new Packet02Move(p.getUsername(), p.getX(), ball.getX(), ball.getY());
+          sendDataToAllClients(packet.getData());       
+        }
+      }
+    }
+  }
+  
   public void run() {
     while(true) {
       byte[] data = new byte[1024];
@@ -68,18 +65,6 @@ public class GameServer extends Thread{
         e.printStackTrace();
       }
       this.parsePacket(packet.getData(), packet.getAddress(), packet.getPort());
-      if(inGame) {
-        for(PlayerMP p : connectedPlayers) {
-          Packet02Move packett = new Packet02Move("down", p.getX(), ball.getX(), ball.getY());
-          packett.writeData(this);     
-        }
-      }
-//      String message = new String(packet.getData());
-//      if(message.trim().equalsIgnoreCase("ping")) {
-//        System.out.println("Client > " + message);
-//        sendData("pong".getBytes(), packet.getAddress(), packet.getPort());
-//      }
-      
     }
   }
   
@@ -109,31 +94,30 @@ public class GameServer extends Thread{
    * player is the player we want to add
    */
   public void addConnection(PlayerMP player, Packet00Login packet) {
-//    boolean alreadyConnected = false;
-    for(PlayerMP p : this.connectedPlayers) {
-//      if we have the username in our list
-//      if(player.getUsername().equalsIgnoreCase(p.getUsername())) {
-//        if(p.ipAddress == null) 
-//          p.ipAddress = player.ipAddress;
-//        if(p.port == -1)
-//          p.port = player.port;
-//        alreadyConnected = true;
-//      }
-//    if not connected, sent data to the socket that is 
-//      connected to the player who is not connected
-//      else {
-//        sendData(packet.getData(), p.ipAddress, p.port);
-//      }
-      sendDataToAllClients(packet.getData());
+    boolean alreadyConnected = false;
+    for (PlayerMP p : this.connectedPlayers) {
+        if (player.getUsername().equalsIgnoreCase(p.getUsername())) {
+            if (p.ipAddress == null) {
+                p.ipAddress = player.ipAddress;
+            }
+            if (p.port == -1) {
+                p.port = player.port;
+            }
+            alreadyConnected = true;
+        } else {
+            // relay to the current connected player that there is a new
+            // player
+            sendData(packet.getData(), p.ipAddress, p.port);
+
+            // relay to the new player that the currently connect player
+            // exists
+            packet = new Packet00Login(p.getUsername(), p.getX(), p.getY());
+            sendData(packet.getData(), player.ipAddress, player.port);
+        }
     }
-//    if(!alreadyConnected) {
-      this.connectedPlayers.add(player);
-//    }
-    System.out.println("All connected players: ");
-    for(PlayerMP p : connectedPlayers) {
-      System.out.println("+ " + p.getUsername() + " " + p.ipAddress + ": " + p.port);
+    if (!alreadyConnected) {
+        this.connectedPlayers.add(player);
     }
-    
   }
 
   public void sendData(byte[] data, InetAddress ipAddress, int port) {
@@ -173,27 +157,16 @@ public class GameServer extends Thread{
   
   private void handleMove(Packet02Move packet, InetAddress address, int port) {
 //    System.out.println(address.getHostAddress() + ": " + port
-//        + " " + packet.getUsername() + " has moved...");    
+//        + " " + packet.getUsername() + " has moved..."); 
+    int i = 0;
     for(PlayerMP player : connectedPlayers) {
-      if(player.getUsername() == packet.getUsername())
-        player.setX(packet.getX());      
+      if(player.getUsername().equalsIgnoreCase(packet.getUsername())) {
+        System.out.println("is a match");
+        player.setX(packet.getX());
+        break;
+      }
+      i++;
     }
+    connectedPlayers.get(i).setX(packet.getX());
   }
-//
-//  public void addPaddle(Paddle paddle) {
-//    if(this.paddle == null) {
-//      this.paddle = paddle;
-//    }
-//  }
-//  
-//  public void addBall(Ball ball) {
-//    if(this.ball == null) {
-//      this.ball = ball;
-//    }
-//  }
-
-//  public void updateBall(Ball ball) {
-//    this.ball.setX(ball.getX());
-//    this.ball.setY(ball.getY());
-//  }
 }

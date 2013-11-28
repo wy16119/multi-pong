@@ -32,7 +32,7 @@ public class Game extends JPanel implements Commons {
     boolean ingame = true;
     int timerId;
     
-    private List<PlayerMP> connectedPlayers = new ArrayList<PlayerMP>();
+    private List<PlayerMP> connectedPlayers;
     public Game(List<PlayerMP> players, GameServer socketServer, Ball ball) {
         connectedPlayers = players; 
         this.socketServer = socketServer;

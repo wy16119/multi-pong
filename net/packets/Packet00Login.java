@@ -38,11 +38,11 @@ public class Packet00Login extends Packet{
     return ("00" + this.username + "," + getX() + "," + getY()).getBytes();
   }
 
-  public int getY() {
+  public int getX() {
     return x;
   }
 
-  public int getX() {
+  public int getY() {
     return y;
   }
 
