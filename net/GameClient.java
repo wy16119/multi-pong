@@ -1,8 +1,6 @@
 package net;
 
 import game.Ball;
-import game.Paddle;
-//import game.Player;
 import game.PlayerMP;
 
 import java.io.IOException;
@@ -26,7 +24,6 @@ public class GameClient extends Thread{
   
   private InetAddress ipAddress;
   private DatagramSocket socket;
-  private Paddle paddle;
   private PlayerMP myPlayer;
   private Ball ball;
   private boolean isServer;
@@ -104,7 +101,6 @@ public class GameClient extends Thread{
     if(!packet.getUsername().equalsIgnoreCase(myPlayer.getUsername())) {
       for(PlayerMP movedPlayer : connectedPlayers) {
         if(movedPlayer.getUsername().equalsIgnoreCase(packet.getUsername())) {
-          System.out.println("another player moved: " + packet.getX());
           movedPlayer.setX(packet.getX());
         }
       }      
@@ -126,10 +122,6 @@ public class GameClient extends Thread{
   private void handleLogin(Packet00Login packet, InetAddress address, int port) {
     System.out.println(address.getHostAddress() + ": " + port
         + " " + packet.getUsername() + " has joined...");
-//    if(!packet.getUsername().equalsIgnoreCase(myPlayer.getUsername())) {
-//      PlayerMP player = new PlayerMP(packet.getUsername(), packet.getX(), packet.getY(), address, port);
-//      this.addConnection(player, packet);
-//    }
     PlayerMP player = new PlayerMP(packet.getUsername(), packet.getX(), packet.getY(), address, port);
     this.addConnection(player, packet);
   }

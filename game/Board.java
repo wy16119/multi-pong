@@ -37,25 +37,14 @@ public class Board extends JPanel implements Commons {
     boolean ingame = true;
     int timerId;
 
-//    private GameServer socketServer;
     private GameClient socketClient;
-//    private List<PlayerMP> connectedPlayers;
     public Board() {
-//      if(JOptionPane.showConfirmDialog(this, "Do you want to run the server") == 0) {
-//        socketServer = new GameServer();
-//        socketServer.start();
-//        isServer = true;
-//      }
       
       
       socketClient = new GameClient("localhost");
       socketClient.start();
       player = new PlayerMP(JOptionPane.showInputDialog(this, "Please enter username"), 200, 360, null, -1);
       Packet00Login loginPacket = new Packet00Login(player.getUsername(), player.getX(), player.getY());
-      
-//      if (socketServer != null) {
-//        socketServer.addConnection((PlayerMP) player, loginPacket);
-//      }
       
       
       
@@ -79,18 +68,7 @@ public class Board extends JPanel implements Commons {
 
         ball = new Ball();
         socketClient.addPlayer(player);
-//        socketClient.addConnectedPlayers(connectedPlayers);
-//        player = new Player(message, timerId, timerId);
-//        System.out.println(paddle.getX());
-//        if(isServer) {
-//          socketServer.addPaddle(paddle);       
-//          socketServer.addBall(ball); 
-//        }
-//        else {
-//        paddle = new Paddle();
-//          socketClient.addPaddle(paddle);
-          socketClient.addBall(ball); 
-//        }
+        socketClient.addBall(ball); 
         int k = 0;
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 6; j++) {
@@ -140,16 +118,11 @@ public class Board extends JPanel implements Commons {
     private class TAdapter extends KeyAdapter {
 
         public void keyReleased(KeyEvent e) {
-          System.out.println("Client pressed key");
             player.keyReleased(e);
-//            Packet02Move packet = new Packet02Move(player.getUsername(), player.getX(), ball.getX(), ball.getY());
-//            packet.writeData(socketClient);
         }
 
         public void keyPressed(KeyEvent e) {
             player.keyPressed(e);
-//            Packet02Move packet = new Packet02Move(player.getUsername(), player.getX(), ball.getX(), ball.getY());
-//            packet.writeData(socketClient);
         }
     }
 

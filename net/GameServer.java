@@ -1,8 +1,6 @@
 package net;
 
 import game.Ball;
-import game.Paddle;
-//import game.Player;
 import game.PlayerMP;
 
 import java.io.IOException;
@@ -24,8 +22,6 @@ import App.Game;
 public class GameServer extends Thread{
   
   private DatagramSocket socket;
-  private Paddle paddle;
-  private PlayerMP player;
   private Ball ball = new Ball();
   private Timer timer;
   private boolean inGame = false;
@@ -145,8 +141,6 @@ public class GameServer extends Thread{
         + " " + packet.getUsername() + " has connected...");
     
     PlayerMP player = new PlayerMP(packet.getUsername(), packet.getX(), packet.getY(), address, port);
-//    player = new PlayerMP(packet.getUsername(), packet.getX(), packet.getY(), address, port);
-//    this.ball = new Ball();
     this.addConnection(player, packet);
     if(getNumPlayers() == 2) {
       System.out.println("RRRRRRRRRReady");
@@ -158,15 +152,11 @@ public class GameServer extends Thread{
   private void handleMove(Packet02Move packet, InetAddress address, int port) {
 //    System.out.println(address.getHostAddress() + ": " + port
 //        + " " + packet.getUsername() + " has moved..."); 
-    int i = 0;
     for(PlayerMP player : connectedPlayers) {
       if(player.getUsername().equalsIgnoreCase(packet.getUsername())) {
-        System.out.println("is a match");
         player.setX(packet.getX());
         break;
       }
-      i++;
     }
-    connectedPlayers.get(i).setX(packet.getX());
   }
 }

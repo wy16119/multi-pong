@@ -27,7 +27,6 @@ public class Game extends JPanel implements Commons {
     public Paddle paddle;
     Brick bricks[];
     GameServer socketServer;
-//    PlayerMP player;
     
     boolean ingame = true;
     int timerId;
@@ -46,7 +45,6 @@ public class Game extends JPanel implements Commons {
 
     public void gameInit() {
 
-//        player = new PlayerMP("server", 200, 360, null, -1);
         System.out.println("ball and player created");
         int k = 0;
         for (int i = 0; i < 5; i++) {
@@ -68,10 +66,6 @@ public class Game extends JPanel implements Commons {
       public void run() {
 
           ball.move();
-//          socketServer.updateBall(ball);
-//          System.out.println("ball moving: " + ball.getX());
-//          for(PlayerMP player : connectedPlayers)
-//            player.move();
           checkCollision();
 
       }
