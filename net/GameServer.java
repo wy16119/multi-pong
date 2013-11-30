@@ -50,6 +50,7 @@ public class GameServer extends Thread implements Commons{
         for(PlayerMP p : connectedPlayers) {
           Packet02Move packet = new Packet02Move(p.getUsername(), p.getX(), ball.getX(), ball.getY());
           sendDataToAllClients(packet.getData()); 
+        }
           boolean[] bricksBool = new boolean[NUM_BRICKS]; 
           for(int i = 0; i < NUM_BRICKS; i++) {
             if(bricks[i].isDestroyed())
@@ -59,7 +60,6 @@ public class GameServer extends Thread implements Commons{
           } 
           Packet03Brick brickPacket = new Packet03Brick(bricksBool);
           sendDataToAllClients(brickPacket.getData());
-        }
       }
     }
   }
@@ -103,30 +103,32 @@ public class GameServer extends Thread implements Commons{
    * player is the player we want to add
    */
   public void addConnection(PlayerMP player, Packet00Login packet) {
-    boolean alreadyConnected = false;
+//    boolean alreadyConnected = false;
+    sendDataToAllClients(packet.getData());
     for (PlayerMP p : this.connectedPlayers) {
-        if (player.getUsername().equalsIgnoreCase(p.getUsername())) {
-            if (p.ipAddress == null) {
-                p.ipAddress = player.ipAddress;
-            }
-            if (p.port == -1) {
-                p.port = player.port;
-            }
-            alreadyConnected = true;
-        } else {
+//        if (player.getUsername().equalsIgnoreCase(p.getUsername())) {
+//            if (p.ipAddress == null) {
+//                p.ipAddress = player.ipAddress;
+//            }
+//            if (p.port == -1) {
+//                p.port = player.port;
+//            }
+//            alreadyConnected = true;
+//        } else {
             // relay to the current connected player that there is a new
             // player
-            sendData(packet.getData(), p.ipAddress, p.port);
+//            sendData(packet.getData(), p.ipAddress, p.port);
 
             // relay to the new player that the currently connect player
             // exists
             packet = new Packet00Login(p.getUsername(), p.getX(), p.getY());
             sendData(packet.getData(), player.ipAddress, player.port);
-        }
+//        }
     }
-    if (!alreadyConnected) {
+    sendData(packet.getData(), player.ipAddress, player.port);
+//    if (!alreadyConnected) {
         this.connectedPlayers.add(player);
-    }
+//    }
   }
 
   public void sendData(byte[] data, InetAddress ipAddress, int port) {

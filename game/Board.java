@@ -38,10 +38,11 @@ public class Board extends JPanel implements Commons {
     int timerId;
 
     private GameClient socketClient;
+    private List<PlayerMP> connectedPlayers = new ArrayList<PlayerMP>();
     public Board() {
       
       
-      socketClient = new GameClient("localhost");
+      socketClient = new GameClient("localhost", this);
       socketClient.start();
       player = new PlayerMP(JOptionPane.showInputDialog(this, "Please enter username"), 200, 360, null, -1);
       Packet00Login loginPacket = new Packet00Login(player.getUsername(), player.getX(), player.getY());
@@ -68,8 +69,8 @@ public class Board extends JPanel implements Commons {
 
         ball = new Ball();
         socketClient.addPlayer(player);
-        socketClient.addBall(ball); 
-        socketClient.addBricks(bricks);
+//        socketClient.addBall(ball); 
+//        socketClient.addBricks(bricks);
         int k = 0;
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 6; j++) {
@@ -86,12 +87,16 @@ public class Board extends JPanel implements Commons {
         if (ingame) {
             g.drawImage(ball.getImage(), ball.getX(), ball.getY(),
                         ball.getWidth(), ball.getHeight(), this);
-            List<PlayerMP> allPlayers = new ArrayList<PlayerMP>(); 
-            allPlayers = socketClient.getConnectedPlayers();
-            for(PlayerMP player : allPlayers) {
+            g.drawImage(player.getImage(), player.getX(), player.getY(),
+                player.getWidth(), player.getHeight(), this);
+//            List<PlayerMP> allPlayers = new ArrayList<PlayerMP>(); 
+//            allPlayers = socketClient.getConnectedPlayers();
+//            System.out.println(allPlayers.size());
+            for(PlayerMP player : connectedPlayers) {
               g.drawImage(player.getImage(), player.getX(), player.getY(),
                   player.getWidth(), player.getHeight(), this);
             }
+            
 
             for (int i = 0; i < 30; i++) {
                 if (!bricks[i].isDestroyed())
@@ -143,5 +148,27 @@ public class Board extends JPanel implements Commons {
         timer.cancel();
     }
 
+    public Brick[] getBricks() {
+      return bricks;
+    }
 
+    public Ball getBall() {
+      return ball;
+    }
+
+    public Player getPlayer() {
+      return player;
+    }
+
+    public void setPlayer(PlayerMP player) {
+      this.player = player;
+    }
+
+    public void addConnectedPlayers(PlayerMP player) {
+      this.connectedPlayers.add(player);
+    }
+    
+    public List<PlayerMP> getConnectedPlayers() {
+      return this.connectedPlayers;
+    }
 }
