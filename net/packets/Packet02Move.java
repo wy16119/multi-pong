@@ -9,6 +9,7 @@ public class Packet02Move extends Packet {
   private int x;
   private int ballX;
   private int ballY;
+  private int gameId;
   
   public Packet02Move(byte[] data) {
     super(02);
@@ -41,7 +42,7 @@ public class Packet02Move extends Packet {
   }
 
   public byte[] getData() {
-    return ("02" + this.username + "," + getX() + "," + getBallX() + "," + getBallY()).getBytes();
+    return ("02" + this.username + "," + this.gameId + "," + getX() + "," + getBallX() + "," + getBallY()).getBytes();
   }
 
   public int getX() {
@@ -56,7 +57,9 @@ public class Packet02Move extends Packet {
     return ballY;
   }
 
-  
+  public int getGameId() {
+    return gameId;
+  }
 
   public String getUsername() {
     return username;

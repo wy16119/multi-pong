@@ -30,12 +30,14 @@ public class GameClient extends Thread implements Commons {
   private Ball ball;
   private Brick bricks[];
   private Timer timer;
+  private int gameId;
   private List<PlayerMP> connectedPlayers = new ArrayList<PlayerMP>();
   
-  public GameClient(String ipAddress) {
+  public GameClient(String ipAddress, int gameId) {
     try {
       this.ipAddress = InetAddress.getByName(ipAddress);
       this.socket = new DatagramSocket();
+      this.gameId= gameId;
       timer = new Timer();
       timer.scheduleAtFixedRate(new ScheduleTask(), 5000, 20);
     } catch (UnknownHostException e) {

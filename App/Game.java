@@ -24,19 +24,22 @@ public class Game extends JPanel implements Commons {
     Timer timer;
     String message = "Game Over";
     Ball ball;
-    public Paddle paddle;
+//    public Paddle paddle;
     Brick bricks[];
     GameServer socketServer;
     
+    
     boolean ingame = true;
     int timerId;
+    int gameId;
     
     private List<PlayerMP> connectedPlayers;
-    public Game(List<PlayerMP> players, GameServer socketServer, Ball ball, Brick[] bricks) {
-        connectedPlayers = players; 
+    public Game(List<PlayerMP> players, GameServer socketServer, int gameId) {
+        this.connectedPlayers = players; 
         this.socketServer = socketServer;
-        this.ball = ball;
-        this.bricks = bricks;
+        this.gameId = gameId;
+//        this.ball = ball;
+//        this.bricks = bricks;
         setDoubleBuffered(true);
         gameInit();
         timer = new Timer();
@@ -44,7 +47,8 @@ public class Game extends JPanel implements Commons {
     }
 
     public void gameInit() {
-
+        bricks = new Brick[NUM_BRICKS];
+        ball = new Ball();
         System.out.println("ball and player created");
         int k = 0;
         for (int i = 0; i < 5; i++) {
@@ -164,5 +168,14 @@ public class Game extends JPanel implements Commons {
                 }
             }
         }
+    }
+    
+//    getter
+    public Ball getBall() {
+      return this.ball;
+    }
+
+    public Brick[] getBricks() {
+      return this.bricks;
     }
 }

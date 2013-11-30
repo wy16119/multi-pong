@@ -20,6 +20,7 @@ public abstract class Packet {
   }
 
   public byte packetId;
+  protected int gameId;
   
   public Packet(int packetId) {
     this.packetId = (byte)packetId;
@@ -51,6 +52,10 @@ public abstract class Packet {
         return p;
     }
     return PacketTypes.INVALID;
+  }
+  
+  public int getGameId() {
+    return gameId;
   }
   
 }

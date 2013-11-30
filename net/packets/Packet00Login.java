@@ -12,13 +12,15 @@ public class Packet00Login extends Packet{
     super(00);
     String[] dataArray = readData(data).split(",");
     this.username = dataArray[0];
-    this.x = Integer.parseInt(dataArray[1]);
-    this.y = Integer.parseInt(dataArray[2]);
+    gameId = Integer.parseInt(dataArray[1]);
+    this.x = Integer.parseInt(dataArray[2]);
+    this.y = Integer.parseInt(dataArray[3]);
   }
 
-  public Packet00Login(String username, int x, int y) {
+  public Packet00Login(String username, int gameId, int x, int y) {
     super(00);
     this.username = username;
+    gameId = gameId;
     this.x = x;
     this.y = y;
   }
@@ -35,7 +37,7 @@ public class Packet00Login extends Packet{
   }
 
   public byte[] getData() {
-    return ("00" + this.username + "," + getX() + "," + getY()).getBytes();
+    return ("00" + this.username + this.gameId + "," + getX() + "," + getY()).getBytes();
   }
 
   public int getX() {
@@ -45,6 +47,7 @@ public class Packet00Login extends Packet{
   public int getY() {
     return y;
   }
+  
 
   public String getUsername() {
     return username;

@@ -25,11 +25,11 @@ import App.Game;
 public class GameServer extends Thread implements Commons{
   
   private DatagramSocket socket;
-  private Ball ball = new Ball();
-  private Brick[] bricks = new Brick[NUM_BRICKS];
+//  private Ball ball = new Ball();
+//  private Brick[] bricks = new Brick[NUM_BRICKS];
   private Timer timer;
-  private boolean inGame = false;
   
+  private List<Game> games = new ArrayList<Game>();
   private List<PlayerMP> connectedPlayers = new ArrayList<PlayerMP>();
 //  private Game game;
   
@@ -46,19 +46,21 @@ public class GameServer extends Thread implements Commons{
   class ScheduleTask extends TimerTask {
 
     public void run() {
-      if(inGame) {
-        for(PlayerMP p : connectedPlayers) {
-          Packet02Move packet = new Packet02Move(p.getUsername(), p.getX(), ball.getX(), ball.getY());
-          sendDataToAllClients(packet.getData()); 
-          boolean[] bricksBool = new boolean[NUM_BRICKS]; 
-          for(int i = 0; i < NUM_BRICKS; i++) {
-            if(bricks[i].isDestroyed())
-              bricksBool[i] = false;
-            else
-              bricksBool[i] = true;
-          } 
-          Packet03Brick brickPacket = new Packet03Brick(bricksBool);
-          sendDataToAllClients(brickPacket.getData());
+      for(int i = 0; i < games.size(); i++) {
+//        if(inGame) {
+          for(PlayerMP p : connectedPlayers) {
+            Packet02Move packet = new Packet02Move(p.getUsername(), p.getX(), games.get(i).getBall().getX(), games.get(i).getBall().getY());
+            sendDataToAllClients(packet.getData()); 
+            boolean[] bricksBool = new boolean[NUM_BRICKS]; 
+            for(int j = 0; j < NUM_BRICKS; j++) {
+              if(games.get(0).getBricks()[j].isDestroyed())
+                bricksBool[j] = false;
+              else
+                bricksBool[j] = true;
+            } 
+            Packet03Brick brickPacket = new Packet03Brick(bricksBool);
+            sendDataToAllClients(brickPacket.getData());
+//          }
         }
       }
     }
@@ -155,10 +157,12 @@ public class GameServer extends Thread implements Commons{
     
     PlayerMP player = new PlayerMP(packet.getUsername(), packet.getX(), packet.getY(), address, port);
     this.addConnection(player, packet);
-    if(getNumPlayers() == NUM_PLAYERS) {
+    if((getNumPlayers() % NUM_PLAYERS) == 0) {
       System.out.println("RRRRRRRRRReady");
-      new Game(connectedPlayers, this, this.ball, this.bricks);
-      inGame = true;
+      int gameId = games.size() + 1;
+      games.add(new Game(connectedPlayers, this, gameId));
+      
+//      inGame = true;
     }
   }
   

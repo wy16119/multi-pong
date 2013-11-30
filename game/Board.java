@@ -29,24 +29,25 @@ public class Board extends JPanel implements Commons {
     Timer timer;
     String message = "Game Over";
     Ball ball;
-    public Paddle paddle;
+//    public Paddle paddle;
     Brick bricks[];
     PlayerMP player;
     
 //    boolean isServer = false;
     boolean ingame = true;
     int timerId;
+    int gameId;
 
     private GameClient socketClient;
     public Board() {
       
       
-      socketClient = new GameClient("localhost");
-      socketClient.start();
       player = new PlayerMP(JOptionPane.showInputDialog(this, "Please enter username"), 200, 360, null, -1);
       Packet00Login loginPacket = new Packet00Login(player.getUsername(), player.getX(), player.getY());
+      gameId = JOptionPane.showConfirmDialog(this, "Please enter room id");
       
-      
+      socketClient = new GameClient("localhost", gameId);
+      socketClient.start();
       
       loginPacket.writeData(socketClient);
       
@@ -143,5 +144,12 @@ public class Board extends JPanel implements Commons {
         timer.cancel();
     }
 
-
+  //  getter
+    public Ball getBall() {
+      return this.ball;
+    }
+  
+    public Brick[] getBricks() {
+      return this.bricks;
+    }
 }
