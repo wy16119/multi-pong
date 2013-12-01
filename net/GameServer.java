@@ -103,30 +103,16 @@ public class GameServer extends Thread implements Commons{
    * player is the player we want to add
    */
   public void addConnection(PlayerMP player, Packet00Login packet) {
-//    boolean alreadyConnected = false;
     sendDataToAllClients(packet.getData());
     for (PlayerMP p : this.connectedPlayers) {
-//        if (player.getUsername().equalsIgnoreCase(p.getUsername())) {
-//            if (p.ipAddress == null) {
-//                p.ipAddress = player.ipAddress;
-//            }
-//            if (p.port == -1) {
-//                p.port = player.port;
-//            }
-//            alreadyConnected = true;
-//        } else {
-            // relay to the current connected player that there is a new
-            // player
-//            sendData(packet.getData(), p.ipAddress, p.port);
-
             // relay to the new player that the currently connect player
             // exists
-            packet = new Packet00Login(p.getUsername(), p.getX(), p.getY());
-            sendData(packet.getData(), player.ipAddress, player.port);
+            Packet00Login pc = new Packet00Login(p.getUsername(), connectedPlayers.size() + 1, p.getX(), p.getY());
+            sendData(pc.getData(), player.ipAddress, player.port);
 //        }
     }
+//    send back to the client itself;
     sendData(packet.getData(), player.ipAddress, player.port);
-//    if (!alreadyConnected) {
         this.connectedPlayers.add(player);
 //    }
   }
@@ -154,7 +140,8 @@ public class GameServer extends Thread implements Commons{
   private void handleLogin(Packet00Login packet, InetAddress address, int port) {
     System.out.println(address.getHostAddress() + ": " + port
         + " " + packet.getUsername() + " has connected...");
-    
+//    set the position of the new added player
+    packet.setPosition(connectedPlayers.size() + 1);
     PlayerMP player = new PlayerMP(packet.getUsername(), packet.getX(), packet.getY(), address, port);
     this.addConnection(player, packet);
     if(getNumPlayers() == NUM_PLAYERS) {

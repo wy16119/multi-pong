@@ -131,9 +131,18 @@ public class GameClient extends Thread implements Commons {
   private void handleLogin(Packet00Login packet, InetAddress address, int port) {
     System.out.println(address.getHostAddress() + ": " + port
         + " " + packet.getUsername() + " has joined...");
-    PlayerMP player = new PlayerMP(packet.getUsername(), packet.getX(), packet.getY(), address, port);
-    this.addConnection(player, packet);
-    System.out.println(game.getConnectedPlayers().size());
+//    my player back
+    if(game.getPlayer().getUsername().equalsIgnoreCase(packet.getUsername())) {
+      game.getPlayer().setPosition(packet.getPosition());
+      game.getPlayer().setX(50 + packet.getPosition() * 50);
+      System.out.println("My position:" + packet.getPosition());
+    }
+    else {
+      PlayerMP player = new PlayerMP(packet.getUsername(), packet.getX(), packet.getY(), address, port);
+      this.addConnection(player, packet);
+      System.out.println(game.getConnectedPlayers().size());
+    }
+      
   }
   
   public void addConnection(PlayerMP player, Packet00Login packet) {
@@ -146,16 +155,5 @@ public class GameClient extends Thread implements Commons {
 //      this.connectedPlayers.add(myPlayer);
       game.addConnectedPlayers(player);
   }
-  
-//  public void addBall(Ball ball) {
-//    this.ball = ball;
-//  }
 
-//  public List<PlayerMP> getConnectedPlayers(){
-//    return this.connectedPlayers;
-//  }
-
-//  public void addBricks(Brick[] bricks) {
-//    this.bricks = bricks;
-//  }
 }

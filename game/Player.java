@@ -9,6 +9,7 @@ public class Player extends Sprite implements Commons {
   private String username;
   String paddle = "../images/paddle.png";
   int dx;
+  private int position;
   
   public Player(String username, int x, int y) {
     this.username = username;
@@ -58,5 +59,10 @@ public class Player extends Sprite implements Commons {
   
   public String getUsername() {
     return this.username;
+  }
+
+  public void setPosition(int position) {
+    this.position = position;
+    
   }
 }

@@ -45,7 +45,7 @@ public class Board extends JPanel implements Commons {
       socketClient = new GameClient("localhost", this);
       socketClient.start();
       player = new PlayerMP(JOptionPane.showInputDialog(this, "Please enter username"), 200, 360, null, -1);
-      Packet00Login loginPacket = new Packet00Login(player.getUsername(), player.getX(), player.getY());
+      Packet00Login loginPacket = new Packet00Login(player.getUsername(), -1, player.getX(), player.getY());
       
       
       
