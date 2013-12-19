@@ -5,10 +5,10 @@ import java.awt.Rectangle;
 
 public class Sprite {
 
-    protected int x;
-    protected int y;
-    protected int width;
-    protected int heigth;
+    protected double x;
+    protected double y;
+    protected double width;
+    protected double heigth;
     protected Image image;
 
 
@@ -17,7 +17,7 @@ public class Sprite {
     }
 
     public int getX() {
-        return x;
+        return (int)x;
     }
 
     public void setY(int y) {
@@ -25,25 +25,25 @@ public class Sprite {
     }
 
     public int getY() {
-        return y;
+        return (int)y;
     }
 
     public int getWidth() {
-        return width;
+        return (int)width;
     }
 
     public int getHeight() {
-        return heigth;
+        return (int)heigth;
     }
 
-    Image getImage()
+    public Image getImage()
     {
       return image;
     }
 
     public Rectangle getRect()
     {
-      return new Rectangle(x, y, 
+      return new Rectangle((int)x, (int)y, 
           image.getWidth(null), image.getHeight(null));
     }
 }

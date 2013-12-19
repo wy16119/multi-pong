@@ -6,12 +6,17 @@ import net.GameServer;
 public class Packet00Login extends Packet{
 
   private String username;
+  private String password;
+  private int position;
   private int x,y;
+  private int score;
+  private int valid;
   
   public Packet00Login(byte[] data) {
     super(00);
     String[] dataArray = readData(data).split(",");
     this.username = dataArray[0];
+<<<<<<< HEAD
     gameId = Integer.parseInt(dataArray[1]);
     this.x = Integer.parseInt(dataArray[2]);
     this.y = Integer.parseInt(dataArray[3]);
@@ -21,8 +26,25 @@ public class Packet00Login extends Packet{
     super(00);
     this.username = username;
     gameId = gameId;
+=======
+    this.password = dataArray[1];
+    this.position = Integer.parseInt(dataArray[2]);
+    this.x = Integer.parseInt(dataArray[3]);
+    this.y = Integer.parseInt(dataArray[4]);
+    this.score = Integer.parseInt(dataArray[5]);
+    this.valid = Integer.parseInt(dataArray[6]);
+  }
+
+  public Packet00Login(String username, String password, int position, int x, int y, int score, int valid) {
+    super(00);
+    this.username = username;
+    this.password = password;
+    this.position = position;
+>>>>>>> complete
     this.x = x;
     this.y = y;
+    this.score = score;
+    this.valid = valid;
   }
   
 //  send datatype+username to client socket
@@ -37,7 +59,11 @@ public class Packet00Login extends Packet{
   }
 
   public byte[] getData() {
+<<<<<<< HEAD
     return ("00" + this.username + this.gameId + "," + getX() + "," + getY()).getBytes();
+=======
+    return ("00" + this.username + "," + this.password + "," + this.position + "," + getX() + "," + getY() + "," + getScore() + "," + getValid()).getBytes();
+>>>>>>> complete
   }
 
   public int getX() {
@@ -51,5 +77,25 @@ public class Packet00Login extends Packet{
 
   public String getUsername() {
     return username;
+  }
+  
+  public String getPassword() {
+    return password;
+  }
+  
+  public int getPosition() {
+    return position;
+  }
+  
+  public int getScore() {
+    return score;
+  }
+  
+  public int getValid() {
+    return valid;
+  }
+  
+  public void setPosition(int position) {
+    this.position = position;
   }
 }

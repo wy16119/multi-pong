@@ -7,27 +7,36 @@ public class Packet02Move extends Packet {
 
   private String username;
   private int x;
+<<<<<<< HEAD
   private int ballX;
   private int ballY;
   private int gameId;
+=======
+  private int y;
+  private int scale;
+  private int lifeLeft;
+  private int score;
+>>>>>>> complete
   
   public Packet02Move(byte[] data) {
     super(02);
     String[] dataArray = readData(data).split(",");
     this.username = dataArray[0];
     this.x = Integer.parseInt(dataArray[1]);
-    this.ballX = Integer.parseInt(dataArray[2]);
-    this.ballY = Integer.parseInt(dataArray[3]);
-//    this.y = Integer.parseInt(dataArray[2]);
+    this.y = Integer.parseInt(dataArray[2]);
+    this.scale = Integer.parseInt(dataArray[3]);
+    this.lifeLeft = Integer.parseInt(dataArray[4]);
+    this.score = Integer.parseInt(dataArray[5]);
   }
 
-  public Packet02Move(String username, int x, int ballX, int ballY) {
+  public Packet02Move(String username, int x, int y, int scale, int lifeLeft, int score) {
     super(02);
     this.username = username;
     this.x = x;
-    this.ballX = ballX;
-    this.ballY = ballY;
-//    this.y = y;
+    this.y = y;
+    this.scale = scale;
+    this.lifeLeft = lifeLeft;
+    this.score = score;
   }
   
 //  send datatype+username to client socket
@@ -42,26 +51,43 @@ public class Packet02Move extends Packet {
   }
 
   public byte[] getData() {
+<<<<<<< HEAD
     return ("02" + this.username + "," + this.gameId + "," + getX() + "," + getBallX() + "," + getBallY()).getBytes();
+=======
+    return ("02" + this.username + "," + getX() + "," + getY() + "," + getScale()+ "," + getLifeLeft() + "," + getScore()).getBytes();
+>>>>>>> complete
   }
 
   public int getX() {
     return x;
   }
 
-  public int getBallX() {
-    return ballX;
+  public int getY() {
+    return y;
   }
   
-  public int getBallY() {
-    return ballY;
+  public int getScale() {
+    return scale;
   }
+  
+  public int getLifeLeft() {
+    return lifeLeft;
+  }
+  
+  public int getScore() {
+    return score;
+  }
+<<<<<<< HEAD
 
   public int getGameId() {
     return gameId;
   }
 
+=======
+  
+>>>>>>> complete
   public String getUsername() {
     return username;
   }
+
 }

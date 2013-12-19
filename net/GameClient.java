@@ -1,8 +1,8 @@
 package net;
 
-import game.Ball;
-import game.Brick;
+import game.Board;
 import game.Commons;
+import game.PaddleInfo;
 import game.PlayerMP;
 
 import java.io.IOException;
@@ -11,25 +11,29 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import javax.swing.JOptionPane;
 
 import net.packets.Packet;
 import net.packets.Packet.PacketTypes;
 import net.packets.Packet00Login;
 import net.packets.Packet02Move;
 import net.packets.Packet03Brick;
+import net.packets.Packet04Ball;
 
 public class GameClient extends Thread implements Commons {
   
   private InetAddress ipAddress;
   private DatagramSocket socket;
-  private PlayerMP myPlayer;
-  private Ball ball;
-  private Brick bricks[];
+//  private PlayerMP myPlayer;
+  private Board game;
+//  private Ball ball;
+//  private Brick bricks[];
   private Timer timer;
+<<<<<<< HEAD
   private int gameId;
   private List<PlayerMP> connectedPlayers = new ArrayList<PlayerMP>();
   
@@ -38,8 +42,17 @@ public class GameClient extends Thread implements Commons {
       this.ipAddress = InetAddress.getByName(ipAddress);
       this.socket = new DatagramSocket();
       this.gameId= gameId;
+=======
+//  private List<PlayerMP> connectedPlayers = new ArrayList<PlayerMP>();
+  
+  public GameClient(String ipAddress, Board game) {
+    try {
+      this.ipAddress = InetAddress.getByName(ipAddress);
+      this.socket = new DatagramSocket();
+      this.game = game;
+>>>>>>> complete
       timer = new Timer();
-      timer.scheduleAtFixedRate(new ScheduleTask(), 5000, 20);
+      timer.scheduleAtFixedRate(new ScheduleTask(), 6000, 5);
     } catch (UnknownHostException e) {
       e.printStackTrace();
     } catch (SocketException e) {
@@ -65,8 +78,15 @@ public class GameClient extends Thread implements Commons {
   class ScheduleTask extends TimerTask {
 
     public void run() {
-        Packet02Move packet = new Packet02Move(myPlayer.getUsername(), myPlayer.getX(), ball.getX(), ball.getY());
-        sendData(packet.getData());
+      // sun
+      if (game.getPlayer() == null)
+        return;
+      //
+      
+      Packet02Move packet = new Packet02Move(game.getPlayer().getUsername(), 
+          game.getPlayer().getX(), game.getPlayer().getY(), 
+          game.getBalls(0).getX(), game.getBalls(0).getY(), game.getPlayer().getScale());
+      sendData(packet.getData());
     }
   }
   
@@ -93,28 +113,51 @@ public class GameClient extends Thread implements Commons {
     case BRICK:
       packet = new Packet03Brick(data);
       handleBrick((Packet03Brick)packet, address, port);
+      break;
+    case BALL:
+      packet = new Packet04Ball(data);
+      handleBall((Packet04Ball)packet, address, port);
+      break;
     }
   }
   
   private void handleBrick(Packet03Brick packet, InetAddress address, int port) {
     boolean[] brickBool = packet.getBricks();
     for(int i = 0; i < NUM_BRICKS; i++) {
-      this.bricks[i].setDestroyed(brickBool[i]);
+      if (! brickBool[i])
+        this.game.getBricks()[i].setDestroyed();
+      else
+        this.game.getBricks()[i].setAppear();
     }
   }
 
+  private void handleBall(Packet04Ball packet, InetAddress address, int port) {
+    for(int i = 0; i < BALL_TOTAL; i++) {
+      if(i == packet.getId()) {
+        this.game.getBalls(i).setX(packet.getBallX());
+        this.game.getBalls(i).setY(packet.getBallY());
+        this.game.getBalls(i).setLost(packet.getLost());
+      }
+    }
+  }
+  
   private void handleMove(Packet02Move packet, InetAddress address, int port) {
-    if(!packet.getUsername().equalsIgnoreCase(myPlayer.getUsername())) {
-      for(PlayerMP movedPlayer : connectedPlayers) {
+//    handle player move
+    if(!packet.getUsername().equalsIgnoreCase(game.getPlayer().getUsername())) {
+      for(PlayerMP movedPlayer : game.getConnectedPlayers()) {
         if(movedPlayer.getUsername().equalsIgnoreCase(packet.getUsername())) {
-          movedPlayer.setX(packet.getX());
+          movedPlayer.set(packet.getX(), packet.getY());
         }
       }      
     }
-      
-    this.ball.setX(packet.getBallX());
-    this.ball.setY(packet.getBallY());
+    for(PlayerMP allPlayer : game.getConnectedPlayers()) {
+      if(allPlayer.getUsername().equalsIgnoreCase(packet.getUsername()))
+        allPlayer.setScaledImage(packet.getScale());
+      if(game.getPlayer().getUsername().equalsIgnoreCase(packet.getUsername()))
+        game.getPlayer().setScaledImage(packet.getScale());
+    }
   }
+
 
   public void sendData(byte[] data) {
     DatagramPacket packet = new DatagramPacket(data, data.length, ipAddress, 3333);
@@ -126,31 +169,59 @@ public class GameClient extends Thread implements Commons {
   }
 
   private void handleLogin(Packet00Login packet, InetAddress address, int port) {
+    // sun
     System.out.println(address.getHostAddress() + ": " + port
-        + " " + packet.getUsername() + " has joined...");
-    PlayerMP player = new PlayerMP(packet.getUsername(), packet.getX(), packet.getY(), address, port);
+        + " " + packet.getUsername() + " login packet received...");  
+    //
+    
+//  my player back
+  if(game.getPlayer().getUsername().equalsIgnoreCase(packet.getUsername())) {
+    // sun 
+    // password incorrect
+    if (packet.getValid() == 0)
+    {
+      JOptionPane.showMessageDialog(game, "Password incorrect!",
+          "Wrong Answer", JOptionPane.ERROR_MESSAGE);
+      System.exit(0);
+    }      
+    game.getPlayer().setPosition(packet.getPosition());
+    game.getPlayer().setValid(1);
+    //
+    
+      System.out.println("My position:" + packet.getPosition());
+      game.getInfos()[packet.getPosition()].setPlayer(game.getPlayer(), "c.png");
+    }
+
+  // sun 
+PlayerMP player = new PlayerMP(packet.getUsername(), packet.getPassword(), packet.getX(), packet.getY(), address, port);
+System.out.println(player.getUsername() + "'s valid is " + player.getValid());;
+//
+
     this.addConnection(player, packet);
+    System.out.println("num of players on client: " + game.getConnectedPlayers().size());
+    
+    List<PlayerMP> allPlayers = game.getConnectedPlayers();
+    for(int i = 0; i < allPlayers.size(); i++) {
+      if(packet.getUsername().equalsIgnoreCase(allPlayers.get(i).getUsername())) {
+        allPlayers.get(i).setPosition(packet.getPosition());
+        System.out.println("Setting player:" + i + " position: " + packet.getPosition());
+        if(!game.getPlayer().getUsername().equalsIgnoreCase(packet.getUsername()))
+          game.getInfos()[packet.getPosition()].setPlayer(allPlayers.get(i), "a.png");
+      }
+    }
+
   }
   
   public void addConnection(PlayerMP player, Packet00Login packet) {
-    this.connectedPlayers.add(player);
-  }
-  
-  public void addPlayer(PlayerMP player) {
     System.out.println("new player added in client");
-      this.myPlayer = player;
-      this.connectedPlayers.add(myPlayer);
+    
+    this.game.addConnectedPlayers(player);
   }
   
-  public void addBall(Ball ball) {
-    this.ball = ball;
-  }
+//  public void addPlayer(PlayerMP player) {
+//      this.game.setPlayer(player);
+////      this.connectedPlayers.add(myPlayer);
+////      game.addConnectedPlayers(player);
+//  }
 
-  public List<PlayerMP> getConnectedPlayers(){
-    return this.connectedPlayers;
-  }
-
-  public void addBricks(Brick[] bricks) {
-    this.bricks = bricks;
-  }
 }

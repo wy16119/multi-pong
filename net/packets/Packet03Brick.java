@@ -13,9 +13,9 @@ public class Packet03Brick extends Packet implements Commons{
     String[] dataArray = readData(data).split(",");
     for(int i = 0; i < NUM_BRICKS; i++) {
       if(dataArray[i+1].equalsIgnoreCase("1"))
-        this.bricks[i] = false;
-      else
         this.bricks[i] = true;
+      else
+        this.bricks[i] = false;
     }
   }
 
