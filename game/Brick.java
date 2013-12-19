@@ -3,17 +3,18 @@ package game;
 import javax.swing.ImageIcon;
 
 
-public class Brick extends Sprite {
+public abstract class Brick extends Sprite {
 
-    String brickie = "../images/brickie.png";
+    String brickie;
 
     boolean destroyed;
 
 
-    public Brick(int x, int y) {
+    public Brick(int x, int y, String inbrickie) {
       this.x = x;
       this.y = y;
-
+      brickie = inbrickie;
+      
       ImageIcon ii = new ImageIcon(this.getClass().getResource(brickie));
       image = ii.getImage();
 
@@ -28,9 +29,24 @@ public class Brick extends Sprite {
       return destroyed;
     }
 
-    public void setDestroyed(boolean destroyed)
+    public void setDestroyed()
     {
-      this.destroyed = destroyed;
+      // if the brickie need to be destroyed twice, once it was destroyed,
+      // it will change to normal bricks
+      if (brickie.equals("brickie4.png"))
+      {
+        brickie = "brickie.png";
+        ImageIcon ii = new ImageIcon(this.getClass().getResource(brickie));
+        image = ii.getImage();
+        this.destroyed = false;
+        return;
+      }
+      else
+          this.destroyed = true;
+    }
+    
+    public void setAppear() {
+      this.destroyed = false;
     }
 
 }

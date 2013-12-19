@@ -6,7 +6,7 @@ import net.GameServer;
 public abstract class Packet {
 
   public static enum PacketTypes {
-    INVALID(-1), LOGIN(00), DISCONNECTED(01), MOVE(02), BRICK(03);
+    INVALID(-1), LOGIN(00), DISCONNECTED(01), MOVE(02), BRICK(03), BALL(04);
     
     private int packetId;
     
